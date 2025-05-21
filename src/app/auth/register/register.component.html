@@ -1,0 +1,18 @@
+<!-- /Users/vitalii.chernysh/final-paper/recommendation-system-frontend/src/app/auth/register/register.component.html -->
+<div class="container">
+  <div class="auth-form">
+    <h2>Register</h2>
+    <form (ngSubmit)="onSubmit()">
+      <div class="form-group">
+        <label for="email">Email</label>
+        <input type="email" id="email" name="email" [(ngModel)]="userData.email" required>
+      </div>
+      <div class="form-group">
+        <label for="password">Password</label>
+        <input type="password" id="password" name="password" [(ngModel)]="userData.password" required>
+      </div>
+      <button type="submit" class="btn btn-block">Register</button>
+    </form>
+    <p>Already have an account? <a routerLink="/login">Login here</a></p>
+  </div>
+</div>

@@ -1,0 +1,86 @@
+<div class="container mx-auto p-4">
+  <h2 class="text-2xl font-bold mb-4 text-center">Sentiment Score Over Time</h2>
+
+  <div *ngIf="isLoading" class="text-center">
+    <p>Loading mood data...</p>
+  </div>
+
+  <div *ngIf="error" class="text-center text-red-500">
+    <p>{{ error }}</p>
+  </div>
+
+  <div *ngIf="!isLoading && !error && moodBalanceChartData.length > 0 && moodBalanceChartData[0].series.length > 0" class="chart-container">
+    <ngx-charts-line-chart
+      [view]="view"
+      [scheme]="moodBalanceColorScheme"
+      [results]="moodBalanceChartData"
+      [gradient]="gradient"
+      [xAxis]="showXAxis"
+      [yAxis]="showYAxis"
+      [legend]="showLegend"
+      [showXAxisLabel]="showXAxisLabel"
+      [showYAxisLabel]="showYAxisLabel"
+      [xAxisLabel]="xAxisLabel"
+      [yAxisLabel]="yAxisLabel"
+      [autoScale]="autoScale"
+      [yScaleMin]="yScaleMin"
+      [yScaleMax]="yScaleMax"
+      (select)="onSelect($event)">
+    </ngx-charts-line-chart>
+  </div>
+
+  <div *ngIf="!isLoading && !error && (moodBalanceChartData.length === 0 || moodBalanceChartData[0].series.length === 0) && !recordLevelDominantMoodsBarEnabled && !detailedEmotionTrendsEnabled" class="text-center">
+    <p>No mood data to display for the selected period.</p>
+  </div>
+
+  <!-- Record-Level Dominant Moods Bar Chart -->
+  <div *ngIf="!isLoading && !error && recordLevelDominantMoodsBarEnabled" class="chart-container mt-8">
+    <h3 class="text-xl font-semibold mb-3 text-center">Dominant Emotion Counts (Per Record)</h3>
+    <ngx-charts-bar-vertical
+      [view]="view"
+      [scheme]="recordLevelDominantMoodsColorScheme"
+      [results]="recordLevelDominantMoodsData"
+      [xAxis]="showBarXAxis"
+      [yAxis]="showBarYAxis"
+      [legend]="showBarLegend"
+      [showXAxisLabel]="showBarXAxisLabel"
+      [showYAxisLabel]="showBarYAxisLabel"
+      [xAxisLabel]="barXAxisLabel"
+      [yAxisLabel]="barYAxisLabel"
+      [yScaleMax]="recordLevelDominantMoodsBarYScaleMax"
+      [showGridLines]="true"
+      [barPadding]="8"
+      [roundEdges]="true"
+      (select)="onSelect($event)">
+    </ngx-charts-bar-vertical>
+  </div>
+  <div *ngIf="!isLoading && !error && (moodBalanceChartData.length > 0 || detailedEmotionTrendsEnabled) && !recordLevelDominantMoodsBarEnabled" class="text-center mt-4">
+    <p>No dominant emotions found in individual records to display in the bar chart.</p>
+  </div>
+
+  <!-- Detailed Emotion Trends Line Chart -->
+  <div *ngIf="!isLoading && !error && detailedEmotionTrendsEnabled" class="chart-container mt-8">
+    <h3 class="text-xl font-semibold mb-3 text-center">Detailed Emotion Intensity Trends</h3>
+    <ngx-charts-line-chart
+      [view]="view"
+      [scheme]="detailedEmotionTrendsColorScheme"
+      [results]="detailedEmotionTrendsData"
+      [gradient]="gradient" 
+      [xAxis]="showDetailedTrendsXAxis"
+      [yAxis]="showDetailedTrendsYAxis"
+      [legend]="showDetailedTrendsLegend"
+      [showXAxisLabel]="showDetailedTrendsXAxisLabel"
+      [showYAxisLabel]="showDetailedTrendsYAxisLabel"
+      [xAxisLabel]="detailedTrendsXAxisLabel"
+      [yAxisLabel]="detailedTrendsYAxisLabel"
+      [autoScale]="detailedTrendsAutoScale"
+      [yScaleMin]="detailedTrendsYScaleMin"
+      [yScaleMax]="detailedTrendsYScaleMax"
+      (select)="onSelect($event)">
+    </ngx-charts-line-chart>
+  </div>
+  <div *ngIf="!isLoading && !error && (moodBalanceChartData.length > 0 || recordLevelDominantMoodsBarEnabled) && !detailedEmotionTrendsEnabled" class="text-center mt-4">
+    <p>Not enough data to display detailed emotion intensity trends.</p>
+  </div>
+
+</div>
