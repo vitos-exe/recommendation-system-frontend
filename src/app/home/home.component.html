@@ -1,25 +1,24 @@
-<!-- /Users/vitalii.chernysh/final-paper/recommendation-system-frontend/src/app/home/home.component.html -->
 <div class="home-screen">
-  <div *ngIf="error" class="error-message">
-    {{ error }}
-  </div>
-
-  <div *ngIf="!isSpotifyAuthenticated()">
+  <div *ngIf="!isSpotifyAuthenticated">
     <p>Please connect to Spotify to see your recently played tracks and get recommendations.</p>
     <button class="btn" (click)="connectSpotify()">Connect to Spotify</button>
   </div>
 
-  <div *ngIf="isSpotifyAuthenticated()">
-    <h3>Your Current Mood</h3>
-    <p>{{ currentMood || 'Loading mood...' }}</p>
+  <div *ngIf="isSpotifyAuthenticated">
+    <div class="padded-in-the-bottom">
+      <h3>Your Current Mood</h3>
+      <p>{{ currentMood || 'Loading mood...' }}</p>
+    </div>
 
-    <h3>Recently Played Tracks</h3>
-    <ul *ngIf="recentTracks.length > 0" class="track-list">
-      <li *ngFor="let track of recentTracks">
-        {{ track.name }} by {{ track.artist }}
-      </li>
-    </ul>
-    <p *ngIf="recentTracks.length === 0">No recent tracks found.</p>
+    <div class="padded-in-the-bottom">
+      <h3>Recently Played Tracks</h3>
+      <ul *ngIf="recentTracks.length > 0" class="track-list">
+        <li *ngFor="let track of recentTracks">
+          {{ track.name }} by {{ track.artist }}
+        </li>
+      </ul>
+      <p *ngIf="recentTracks.length === 0">No recent tracks found.</p>
+    </div>
 
     <button class="btn" (click)="getRecommendations()">Get New Recommendations</button>
 

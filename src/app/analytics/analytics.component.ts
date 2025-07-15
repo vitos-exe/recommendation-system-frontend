@@ -157,36 +157,48 @@ export class AnalyticsComponent implements OnInit {
       this.detailedEmotionTrendsData = []; // Clear detailed trends data
       return;
     }
-    
+
     const sortedRecords = records.sort((a, b) => {
       const dateA = a.recorded_at ? new Date(a.recorded_at).getTime() : 0;
       const dateB = b.recorded_at ? new Date(b.recorded_at).getTime() : 0;
       return dateA - dateB;
     });
 
+    const alreadyPresentData = new Set<number>();
+    const filteredRecords = sortedRecords.filter(record => {
+      if (record.recorded_at) {
+        const date = new Date(record.recorded_at).getTime()
+        const dateKey = Math.floor(date / (1000 * 60));
+        if (alreadyPresentData.has(dateKey)) {
+          return false; // Skip if this date is already processed
+        }
+        alreadyPresentData.add(dateKey);
+      }
+      return true; // Include this record
+    });
+
     const seriesSentimentScore = { name: 'Sentiment Score', series: [] as { name: string, value: number }[] };
     const recordLevelCounts = { happy: 0, sad: 0, angry: 0, relaxed: 0 };
 
-    // New: Series for detailed emotion trends
     const seriesHappy = { name: 'Happy', series: [] as { name: string, value: number }[] };
     const seriesSad = { name: 'Sad', series: [] as { name: string, value: number }[] };
     const seriesAngry = { name: 'Angry', series: [] as { name: string, value: number }[] };
     const seriesRelaxed = { name: 'Relaxed', series: [] as { name: string, value: number }[] };
 
     let allSameDay = true;
-    if (sortedRecords.length > 0 && sortedRecords[0].recorded_at) {
-      const firstDayString = new Date(sortedRecords[0].recorded_at).toDateString();
-      for (let i = 1; i < sortedRecords.length; i++) {
-        if (!sortedRecords[i].recorded_at || new Date(sortedRecords[i].recorded_at!).toDateString() !== firstDayString) {
+    if (filteredRecords.length > 0 && filteredRecords[0].recorded_at) {
+      const firstDayString = new Date(filteredRecords[0].recorded_at).toDateString();
+      for (let i = 1; i < filteredRecords.length; i++) {
+        if (!filteredRecords[i].recorded_at || new Date(filteredRecords[i].recorded_at!).toDateString() !== firstDayString) {
           allSameDay = false;
           break;
         }
       }
-    } else if (sortedRecords.length > 0) {
-      allSameDay = sortedRecords.every(r => !r.recorded_at); 
+    } else if (filteredRecords.length > 0) {
+      allSameDay = filteredRecords.every(r => !r.recorded_at);
     }
 
-    sortedRecords.forEach(record => {
+    filteredRecords.forEach(record => {
       let dateLabel: string;
       if (record.recorded_at) {
         const recordDate = new Date(record.recorded_at);
@@ -198,12 +210,10 @@ export class AnalyticsComponent implements OnInit {
       } else {
         dateLabel = 'Unknown Date';
       }
-      
+
       const happyValue = record.happy * 100;
       const sadValue = record.sad * 100;
-      const angryValue = record.angry * 100;
-      const relaxedValue = record.relaxed * 100;
-      
+
       const goodMoodValue = (happyValue + relaxedValue) / 2;
       const badMoodValue = (sadValue + angryValue) / 2;
       const moodBalanceValue = goodMoodValue - badMoodValue;
@@ -232,7 +242,7 @@ export class AnalyticsComponent implements OnInit {
         });
       }
     });
-    
+
     if (seriesSentimentScore.series.length > 0) {
       this.moodBalanceChartData = [seriesSentimentScore];
     } else {

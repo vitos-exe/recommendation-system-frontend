@@ -15,7 +15,7 @@ import { MoodService, MoodVector, RecommendedSong } from '../services/mood.servi
   styleUrls: ['./home.component.css']
 })
 export class HomeComponent implements OnInit, OnDestroy {
-  private _isSpotifyAuthenticated: boolean = false;
+  isSpotifyAuthenticated: boolean = false;
 
   currentMood: string = 'Loading mood...';
   actualMoodVector: MoodVector | null = null;
@@ -33,7 +33,7 @@ export class HomeComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
-    this.checkSpotifyAuthAndLoadInitialData();
+    this.loadInitialData(false);
   }
 
   ngOnDestroy(): void {
@@ -48,7 +48,7 @@ export class HomeComponent implements OnInit, OnDestroy {
     this.dataPollingSubscription = interval(30000)
       .pipe(
         switchMap(() => {
-          if (!this._isSpotifyAuthenticated) return of(null);
+          if (!this.isSpotifyAuthenticated) return of(null);
           return forkJoin({
             tracks: this.spotifyService.getRecentTracks(10, 60, true).pipe(
               catchError(err => {
@@ -86,7 +86,7 @@ export class HomeComponent implements OnInit, OnDestroy {
   private loadInitialData(isAfterAuthSuccess: boolean): void {
     this.spotifyService.getRecentTracks(10, 60, true).pipe(
       switchMap((tracks: Track[]) => {
-        this._isSpotifyAuthenticated = true;
+        this.isSpotifyAuthenticated = true;
         this.recentTracks = tracks;
         this.error = null;
         return this.moodService.getCurrentMood().pipe(
@@ -97,7 +97,7 @@ export class HomeComponent implements OnInit, OnDestroy {
         );
       }),
       catchError(err => {
-        this._isSpotifyAuthenticated = false;
+        this.isSpotifyAuthenticated = false;
         this.recentTracks = [];
         this.updateCurrentMoodDisplay(null);
         this.recommendedTrack = null;
@@ -116,19 +116,15 @@ export class HomeComponent implements OnInit, OnDestroy {
     ).subscribe({
       next: (moodVector: MoodVector | null) => {
         this.updateCurrentMoodDisplay(moodVector);
-        if (this._isSpotifyAuthenticated) {
+        if (this.isSpotifyAuthenticated) {
           this.initializeDataPolling();
         }
       }
     });
   }
 
-  checkSpotifyAuthAndLoadInitialData(): void {
-    this.loadInitialData(false);
-  }
-
   fetchCurrentMood(): void {
-    if (!this._isSpotifyAuthenticated) {
+    if (!this.isSpotifyAuthenticated) {
       this.updateCurrentMoodDisplay(null);
       return;
     }
@@ -148,7 +144,7 @@ export class HomeComponent implements OnInit, OnDestroy {
   updateCurrentMoodDisplay(moodVector: MoodVector | null): void {
     this.actualMoodVector = moodVector;
 
-    if (!this._isSpotifyAuthenticated && !moodVector) {
+    if (!this.isSpotifyAuthenticated && !moodVector) {
       this.currentMood = 'Connect to Spotify to see your mood.';
       return;
     }
@@ -174,10 +170,6 @@ export class HomeComponent implements OnInit, OnDestroy {
     } else {
       this.currentMood = 'Mood data unclear';
     }
-  }
-
-  isSpotifyAuthenticated(): boolean {
-    return this._isSpotifyAuthenticated;
   }
 
   connectSpotify(): void {
@@ -255,7 +247,7 @@ export class HomeComponent implements OnInit, OnDestroy {
     console.error(`API Error (${context}):`, err);
     if (err.status === 401) {
       this.error = `Authentication error (${context}). Your session may have expired. Please log in again.`;
-      this._isSpotifyAuthenticated = false;
+      this.isSpotifyAuthenticated = false;
       this.recentTracks = [];
       this.updateCurrentMoodDisplay(null);
       this.recommendedTrack = null;
@@ -264,7 +256,7 @@ export class HomeComponent implements OnInit, OnDestroy {
       }
       this.authService.logout();
     } else if (err.status === 403) {
-      this._isSpotifyAuthenticated = false;
+      this.isSpotifyAuthenticated = false;
       this.error = `Spotify access denied or token expired (${context}). Please reconnect Spotify.`;
       this.recentTracks = [];
       this.updateCurrentMoodDisplay(null);
